@@ -57,14 +57,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = 'email'
     """Use the email as unique username."""
 
-    REQUIRED_FIELDS = ['first_name', 'last_name']
-
-    # GENDER_MALE = 'M'
-    # GENDER_FEMALE = 'F'
-    # GENDER_CHOICES = [
-    #     (GENDER_MALE, _("Male")),
-    #     (GENDER_FEMALE, _("Female")),
-    # ]
+    REQUIRED_FIELDS = ['name']
 
     email = models.EmailField(
         verbose_name=_("email address"), unique=True,
@@ -73,15 +66,8 @@ class User(AbstractBaseUser, PermissionsMixin):
                 "A user is already registered with this email address"),
         },
     )
-    # gender = models.CharField(
-    #     max_length=1, blank=True, choices=GENDER_CHOICES,
-    #     verbose_name=_("gender"),
-    # )
-    first_name = models.CharField(
-        max_length=30, verbose_name=_("first name"),
-    )
-    last_name = models.CharField(
-        max_length=30, verbose_name=_("last name"),
+    name = models.CharField(
+        max_length=30, verbose_name=_("name"),
     )
     is_staff = models.BooleanField(
         verbose_name=_("staff status"),
@@ -110,9 +96,5 @@ class User(AbstractBaseUser, PermissionsMixin):
     )
 
     objects = UserManager()
-
-    @property
-    def full_name(self):
-        return f'{self.first_name} {self.last_name}'
 
 

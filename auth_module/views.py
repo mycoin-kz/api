@@ -1,7 +1,10 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.exceptions import AuthenticationFailed
+from rest_framework.views import APIView
+
 from .serializers import UserSerializer
+# from .serializers import LoginSerializer
 
 from .models import User
 from .helpers import check_auth
@@ -11,6 +14,13 @@ import datetime
 # from dateutil.parser import parse as date_parse
 # from django.utils import timezone
 
+
+# class LoginView(APIView):
+#     serializer_class = LoginSerializer
+    
+#     def post(self, request, *args, **kwargs):
+#         serializer = self.serializer_class()
+        
 
 @api_view(['POST'])
 def login(request):
@@ -40,10 +50,7 @@ def login(request):
         'secret',
         algorithm='HS256'
     )
-    response = Response({'jwt': token})
-    response.set_cookie(key='jwt', value=token)
-
-    return response
+    return Response({'jwt': token})
 
 
 @api_view(['POST'])

@@ -1,10 +1,10 @@
 from rest_framework.exceptions import AuthenticationFailed, NotAuthenticated
 from .models import User
-
+from django.http.request import HttpRequest
 import jwt
 
 
-def check_auth(request):
+def check_auth(request: HttpRequest):
     """
     checks whether the is authorized or not and
     in case of a successful validation returns
@@ -13,8 +13,14 @@ def check_auth(request):
     :param request:
     :return: User object
     """
-    token = request.data['jwt']  # get the jwt token from the request cookies
+    token = None  # get the jwt token from the request cookies
+    # print(f'token: {token}')
+    print(f'cookie: {request.COOKIES}')
 
+    if 'jwt' in request.COOKIES:
+        token = request.COOKIES['jwt']
+    elif 'jwt' in request.data:
+        token = request.data['jwt']
     if not token:
         raise NotAuthenticated('Unauthorized!')
 

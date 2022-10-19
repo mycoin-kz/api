@@ -155,3 +155,18 @@ AUTH_USER_MODEL = 'auth_module.User'
 # ]
 CORS_ALLOW_ALL_ORIGINS = True
 
+# CORS_ALLOW_HEADERS = [
+#     "accept",
+#     "accept-encoding",
+#     "authorization",
+#     "content-type",
+#     "dnt",
+#     "origin",
+#     "user-agent",
+#     "x-csrftoken",
+#     "x-requested-with",
+#     "Set-Cookie"
+# ]
+
+CORS_ALLOW_CREDENTIALS = True
+SESSION_COOKIE_SAMESITE = 'None'

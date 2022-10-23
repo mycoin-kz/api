@@ -17,7 +17,9 @@ def check_auth(request: HttpRequest):
     # print(f'token: {token}')
     print(f'cookie: {request.COOKIES}')
 
-    if 'jwt' in request.COOKIES:
+    if 'HTTP_AUTHORIZATION' in request.META:
+        token = request.META['HTTP_AUTHORIZATION'].split(' ')[1]
+    elif 'jwt' in request.COOKIES:
         token = request.COOKIES['jwt']
     elif 'jwt' in request.data:
         token = request.data['jwt']

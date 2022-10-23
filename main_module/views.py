@@ -26,12 +26,17 @@ def watchlist(request):
             pass
         serializer = WatchlistSerializer(user.watchlist, many=True)
         return Response(serializer.data)
-    if request.method == 'DELETE':
-        user = check_auth(request)
-        try:
-            watchlist = Watchlist.objects.get(user=user, token=request.data['token'])
-            watchlist.delete()
-        except:
-            pass
-        serializer = WatchlistSerializer(user.watchlist, many=True)
-        return Response(serializer.data)
+
+
+@api_view(['DELETE'])
+def delete_watchlist(request, token_id):
+    user = check_auth(request)
+    try:
+        watchlist = Watchlist.objects.get(user=user, token=token_id)
+        watchlist.delete()
+    except:
+        pass
+    serializer = WatchlistSerializer(user.watchlist, many=True)
+    return Response(serializer.data)
+
+

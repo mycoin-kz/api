@@ -58,6 +58,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     """Use the email as unique username."""
 
     REQUIRED_FIELDS = ['name']
+    
+    username = models.CharField(
+        max_length=255, unique=True
+    )
 
     email = models.EmailField(
         verbose_name=_("email address"), unique=True,
@@ -96,5 +100,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     )
 
     objects = UserManager()
+    
+    def save(self, *args, **kwargs):
+        self.username = self.email
+        return super().save(*args, **kwargs)
 
 

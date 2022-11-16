@@ -167,8 +167,10 @@ AUTH_USER_MODEL = 'auth_module.User'
 # ]
 CORS_ALLOW_ALL_ORIGINS = True
 
-CSRF_TRUSTED_ORIGINS = config('FRONTEND_URL', 'https://localhost:8000').split(' ')
+CSRF_TRUSTED_ORIGINS = config('FRONTEND_URL', 'https://localhost:8000 https://localhost:8080').split(' ')
 
+# REST_SESSION_LOGIN = False
+ACCOUNT_LOGOUT_ON_GET = True
 # CORS_ALLOW_HEADERS = [
 #     "accept",
 #     "accept-encoding",

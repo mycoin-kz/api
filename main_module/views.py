@@ -1,10 +1,13 @@
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.exceptions import AuthenticationFailed
+
+from rest_framework.permissions import IsAuthenticated
+
 from auth_module.helpers import check_auth
 from main_module.models import Watchlist
 from .serializers import WatchlistSerializer
 from django.db.utils import IntegrityError
-from rest_framework import status
 
 @api_view(['GET'])
 def index(request):
@@ -12,31 +15,30 @@ def index(request):
 
 
 @api_view(['POST', 'GET', 'DELETE'])
+@permission_classes([IsAuthenticated])
 def watchlist(request):
     if request.method == 'GET':
-        user = check_auth(request)
-        serializer = WatchlistSerializer(user.watchlist, many=True)
+        serializer = WatchlistSerializer(request.user.watchlist, many=True)
         return Response(serializer.data)
     if request.method == 'POST':
-        user = check_auth(request)
         try: 
-            watchlist_obj = Watchlist(user=user, token=request.data['token'])
+            watchlist_obj = Watchlist(user=request.user, token=request.data['token'])
             watchlist_obj.save()
         except IntegrityError:
             pass
-        serializer = WatchlistSerializer(user.watchlist, many=True)
+        serializer = WatchlistSerializer(request.user.watchlist, many=True)
         return Response(serializer.data)
 
 
 @api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
 def delete_watchlist(request, token_id):
-    user = check_auth(request)
     try:
-        watchlist = Watchlist.objects.get(user=user, token=token_id)
+        watchlist = Watchlist.objects.get(user=request.user, token=token_id)
         watchlist.delete()
     except:
         pass
-    serializer = WatchlistSerializer(user.watchlist, many=True)
+    serializer = WatchlistSerializer(request.user.watchlist, many=True)
     return Response(serializer.data)
 
 

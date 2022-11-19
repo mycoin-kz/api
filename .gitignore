@@ -6,3 +6,4 @@ db1.sqlite3
 .DS_Store
 .env
 _playground.py
+*.pem

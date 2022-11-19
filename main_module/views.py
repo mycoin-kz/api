@@ -1,10 +1,7 @@
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.exceptions import AuthenticationFailed
-
 from rest_framework.permissions import IsAuthenticated
 
-from auth_module.helpers import check_auth
 from main_module.models import Watchlist
 from .serializers import WatchlistSerializer
 from django.db.utils import IntegrityError

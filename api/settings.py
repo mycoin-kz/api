@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sites',
+    "django_extensions",
     'corsheaders',
     'rest_framework',
     'rest_framework.authtoken',
@@ -137,6 +138,18 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# REST_FRAMEWORK = {
+#     'DEFAULT_AUTHENTICATION_CLASSES': [
+#         'rest_framework.authentication.SessionAuthentication',
+#     ]
+# }
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'dj_rest_auth.jwt_auth.JWTCookieAuthentication',
+    ],
+}
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
@@ -162,30 +175,28 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'auth_module.User'
 
-# CORS_ALLOWED_ORIGINS = [
-#     'localhost'
-# ]
+# CORS_ALLOWED_ORIGINS = config('FRONTEND_URL', 'https://localhost:8000 https://localhost:8080').split(' ')
 CORS_ALLOW_ALL_ORIGINS = True
 
+CSRF_COOKIE_PATH = '/'
+CSRF_COOKIE_SAMESITE = 'None'
+CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_NAME = 'csrftoken'
+CSRF_COOKIE_HTTPONLY = False
 CSRF_TRUSTED_ORIGINS = config('FRONTEND_URL', 'https://localhost:8000 https://localhost:8080').split(' ')
 
-# REST_SESSION_LOGIN = False
-ACCOUNT_LOGOUT_ON_GET = True
-# CORS_ALLOW_HEADERS = [
-#     "accept",
-#     "accept-encoding",
-#     "authorization",
-#     "content-type",
-#     "dnt",
-#     "origin",
-#     "user-agent",
-#     "x-csrftoken",
-#     "x-requested-with",
-#     "Set-Cookie"
-# ]
+# ACCOUNT_LOGOUT_ON_GET = True
 
 CORS_ALLOW_CREDENTIALS = True
 SESSION_COOKIE_SAMESITE = 'None'
+SESSION_COOKIE_HTTPONLY = False
+
+
+REST_SESSION_LOGIN = False
+REST_USE_JWT = True
+JWT_AUTH_COOKIE = 'jwt'
+JWT_AUTH_REFRESH_COOKIE = 'jwt-refresh'
+JWT_AUTH_SAMESITE = 'None'
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_USE_TLS = config('EMAIL_USE_TLS', True)
@@ -194,6 +205,5 @@ EMAIL_PORT = config('EMAIL_PORT', 25)
 EMAIL_HOST_USER=config('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD=config('EMAIL_HOST_PASSWORD', '')
 
-# REST_USE_JWT = True
 
 

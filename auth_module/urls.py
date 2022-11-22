@@ -12,6 +12,8 @@ urlpatterns = [
     path('registration/', include('dj_rest_auth.registration.urls')),
     path('facebook/', views.FacebookLogin.as_view(), name='fb_login'),
     path('twitter/', views.TwitterLogin.as_view(), name='twitter_login'),
+    path('google/', views.GoogleLoginAdapter.as_view(), name='google_login'),
+    path('google-code/', views.GoogleLogin.as_view(), name='google_login'),
     
     path('password-reset/<uidb64>/<token>/', views.empty_view, name='password_reset_confirm'),
 ]

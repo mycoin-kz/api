@@ -58,7 +58,7 @@ INSTALLED_APPS = [
     'auth_module',
     'main_module',
 ]
-SITE_ID = 1
+SITE_ID = 2
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
@@ -207,3 +207,27 @@ EMAIL_HOST_PASSWORD=config('EMAIL_HOST_PASSWORD', '')
 
 
 
+
+
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        "APP": {
+            "client_id": config("GOOGLE_CLIENT_ID"),
+            "secret": config("GOOGLE_SECRET_KEY"),
+            "key": ""
+        },
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+        }
+    }
+}
+
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend'
+]

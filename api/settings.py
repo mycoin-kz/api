@@ -95,12 +95,6 @@ WSGI_APPLICATION = 'api.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
 DATABASES = {
     'default': config(
         'DATABASE_URL',
@@ -108,16 +102,6 @@ DATABASES = {
         cast=db_url
     )
 }
-
-# if not DEBUG:
-#     DATABASES['default'] = {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': config('DB_NAME'),
-#         'USER': config('DB_USERNAME'),
-#         'PASSWORD': config('DB_PASSWORD'),
-#         'HOST': config('DB_HOST'),
-#         'PORT': config('DB_PORT'),
-#     }
 
 
 # Password validation
@@ -137,12 +121,6 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
-
-# REST_FRAMEWORK = {
-#     'DEFAULT_AUTHENTICATION_CLASSES': [
-#         'rest_framework.authentication.SessionAuthentication',
-#     ]
-# }
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
@@ -175,8 +153,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'auth_module.User'
 
-# CORS_ALLOWED_ORIGINS = config('FRONTEND_URL', 'https://localhost:8000 https://localhost:8080').split(' ')
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOWED_ORIGINS = config('FRONTEND_URL', 'https://localhost:8000 https://localhost:8080').split(' ')
+# CORS_ALLOW_ALL_ORIGINS = True
 
 CSRF_COOKIE_PATH = '/'
 CSRF_COOKIE_SAMESITE = 'None'
@@ -184,8 +162,6 @@ CSRF_COOKIE_SECURE = True
 CSRF_COOKIE_NAME = 'csrftoken'
 CSRF_COOKIE_HTTPONLY = False
 CSRF_TRUSTED_ORIGINS = config('FRONTEND_URL', 'https://localhost:8000 https://localhost:8080').split(' ')
-
-# ACCOUNT_LOGOUT_ON_GET = True
 
 CORS_ALLOW_CREDENTIALS = True
 SESSION_COOKIE_SAMESITE = 'None'
@@ -205,29 +181,3 @@ EMAIL_PORT = config('EMAIL_PORT', 25)
 EMAIL_HOST_USER=config('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD=config('EMAIL_HOST_PASSWORD', '')
 
-
-
-
-
-SOCIALACCOUNT_PROVIDERS = {
-    'google': {
-        "APP": {
-            "client_id": config("GOOGLE_CLIENT_ID"),
-            "secret": config("GOOGLE_SECRET_KEY"),
-            "key": ""
-        },
-        'SCOPE': [
-            'profile',
-            'email',
-        ],
-        'AUTH_PARAMS': {
-            'access_type': 'online',
-        }
-    }
-}
-
-
-AUTHENTICATION_BACKENDS = [
-    'django.contrib.auth.backends.ModelBackend',
-    'allauth.account.auth_backends.AuthenticationBackend'
-]

@@ -54,7 +54,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         # `db_table` is only needed if you move from the existing default
         # User model to a custom one. This enables to keep the existing data.
 
-    USERNAME_FIELD = 'email'
+    USERNAME_FIELD = 'username'
     """Use the email as unique username."""
 
     REQUIRED_FIELDS = ['name']
@@ -64,15 +64,15 @@ class User(AbstractBaseUser, PermissionsMixin):
     )
 
     email = models.EmailField(
-        verbose_name=_("email address"), unique=True,
-        error_messages={
-            'unique': _(
-                "A user is already registered with this email address"),
-        },
+        verbose_name=_("email address")
     )
     name = models.CharField(
         max_length=30, verbose_name=_("name"),
     )
+    
+    first_name = models.CharField(max_length=255)
+    last_name = models.CharField(max_length=255)
+    
     is_staff = models.BooleanField(
         verbose_name=_("staff status"),
         default=False,
@@ -101,8 +101,3 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     objects = UserManager()
     
-    def save(self, *args, **kwargs):
-        self.username = self.email
-        return super().save(*args, **kwargs)
-
-

@@ -16,6 +16,7 @@ from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 
 import requests
+from decouple import config
 
 class GoogleLogin(SocialLoginView): # if you want to use Authorization Code Grant, use this
     adapter_class = GoogleOAuth2Adapter
@@ -76,20 +77,6 @@ def profile(request):
         raise AuthenticationFailed()
 
 
-# @api_view(['POST'])
-# def update_user(request):
-#     user = check_auth(request)
-#     if request.data['first_name']:
-#         user.first_name = request.data['first_name']
-
-#     if request.data['last_name']:
-#         user.last_name = request.data['last_name']
-
-#     user.save()
-#     serializer = UserSerializer(user)
-#     return Response(serializer.data)
-
-
 @api_view(['GET'])
 def empty_view(request, uidb64, token):
     return Response('empty view')
@@ -99,18 +86,18 @@ def empty_view(request, uidb64, token):
 class GoogleLoginAdapter(APIView):
     permission_classes = [AllowAny]
 
-    CLIENT_ID = '743693342387-bgj30sdiuvhutqnnin9b5ss2l3091p04.apps.googleusercontent.com'
-    CLIENT_SECRET = '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'  # Read from a file or environmental variable in a real app
-    SCOPE = 'https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/openid'
-    REDIRECT_URI = 'https://127.0.0.1:8000/api/auth/google/'
+    CLIENT_ID = config('GOOGLE_CLIENT_ID', '')
+    CLIENT_SECRET = config('GOOGLE_SECRET_KEY', '')  # Read from a file or environmental variable in a real app
+    SCOPE = config('GOOGLE_SCOPE', '')
+    REDIRECT_URI = config('GOOGLE_REDIRECT_URI', '')
+    FRONT_REDIRECT = config('GOOGLE_FRONTEND_REDIRECT', '')
 
 
     def post(self, request, *args, **kwargs):
-        # return Response('hello there')
         if 'code' not in request.data:
             auth_uri = ('https://accounts.google.com/o/oauth2/v2/auth?response_type=code'
                 '&client_id={}&redirect_uri={}&scope={}').format(self.CLIENT_ID, self.REDIRECT_URI, self.SCOPE)
-            return Response(auth_uri)
+            return Response({'data passed': request.data, 'auth uri': auth_uri})
         else:
             auth_code = request.data['code']
             data = {'code': auth_code,
@@ -120,7 +107,7 @@ class GoogleLoginAdapter(APIView):
                     'grant_type': 'authorization_code'
                     }
             r = requests.post('https://oauth2.googleapis.com/token', data=data)
-            return Response(r.text)
+            return HttpResponseRedirect(self.FRONT_REDIRECT + '?code=' + r.json()['access_token'])
     
     def get(self, request, *args, **kwargs):
         code = request.GET.get('code', '')
@@ -136,6 +123,5 @@ class GoogleLoginAdapter(APIView):
                     'grant_type': 'authorization_code'
                     }
             r = requests.post('https://oauth2.googleapis.com/token', data=data)
-            return Response(r.json())
-        # return Response('Your data has been passed!')
+            return HttpResponseRedirect(self.FRONT_REDIRECT + '?code=' + r.json()['access_token'])
 

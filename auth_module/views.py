@@ -107,7 +107,10 @@ class GoogleLoginAdapter(APIView):
                     'grant_type': 'authorization_code'
                     }
             r = requests.post('https://oauth2.googleapis.com/token', data=data)
-            return HttpResponseRedirect(self.FRONT_REDIRECT + '?code=' + r.json()['access_token'])
+            if 'access_token' in r.json():
+                return HttpResponseRedirect(self.FRONT_REDIRECT + '?code=' + r.json()['access_token'])
+            else:
+                return Response({'error': r.json()})
     
     def get(self, request, *args, **kwargs):
         code = request.GET.get('code', '')
@@ -123,5 +126,8 @@ class GoogleLoginAdapter(APIView):
                     'grant_type': 'authorization_code'
                     }
             r = requests.post('https://oauth2.googleapis.com/token', data=data)
-            return HttpResponseRedirect(self.FRONT_REDIRECT + '?code=' + r.json()['access_token'])
+            if 'access_token' in r.json():
+                return HttpResponseRedirect(self.FRONT_REDIRECT + '?code=' + r.json()['access_token'])
+            else:
+                return Response({'error': r.json()})
 

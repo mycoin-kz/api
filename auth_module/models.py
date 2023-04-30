@@ -4,6 +4,7 @@ from django.contrib.auth.models import (
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+from django.core.validators import MinLengthValidator, EmailValidator
 
 from .validators import validate_file_extension
 
@@ -54,17 +55,19 @@ class User(AbstractBaseUser, PermissionsMixin):
         # `db_table` is only needed if you move from the existing default
         # User model to a custom one. This enables to keep the existing data.
 
-    USERNAME_FIELD = 'username'
-    """Use the email as unique username."""
 
     REQUIRED_FIELDS = ['name']
     
     username = models.CharField(
-        max_length=255, unique=True
+        max_length=255, 
+        unique=True,
+        validators=[MinLengthValidator(3)]
     )
 
     email = models.EmailField(
-        verbose_name=_("email address")
+        verbose_name=_("email address"),
+        unique=True,
+        validators=[EmailValidator]
     )
     name = models.CharField(
         max_length=30, verbose_name=_("name"),
@@ -100,4 +103,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     )
 
     objects = UserManager()
+    
+    USERNAME_FIELD = 'email'
+    """Use the email as unique username."""
     

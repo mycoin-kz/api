@@ -24,7 +24,7 @@ class CustomUserAdmin(UserAdmin):
         ),
         (_("Important dates"), {"fields": ("last_login", "date_joined")}),
     )
-    list_display = ("email", "name", "is_staff")
+    list_display = ("email", "name", "is_staff", "profile_pic")
     # list_filter = ("is_staff", "is_superuser", "is_active", "groups")
     search_fields = ("name", "email")
     ordering = ("email",)

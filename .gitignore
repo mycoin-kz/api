@@ -7,3 +7,5 @@ db1.sqlite3
 .env
 _playground.py
 *.pem
+.vscode
+.idea

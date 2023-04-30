@@ -4,6 +4,7 @@ import os
 import sys
 
 
+# python manage.py runserver_plus --cert-file cert.pem --key-file key.pem
 def main():
     """Run administrative tasks."""
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'api.settings')

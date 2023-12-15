@@ -6,6 +6,7 @@ from main_module.models import Watchlist
 from .serializers import WatchlistSerializer
 from django.db.utils import IntegrityError
 
+
 @api_view(['GET'])
 def index(request):
     return Response(data='index endpoint!')
@@ -13,7 +14,7 @@ def index(request):
 
 @api_view(['POST', 'GET', 'DELETE'])
 @permission_classes([IsAuthenticated])
-def watchlist(request):
+def get_watchlist(request):
     if request.method == 'GET':
         serializer = WatchlistSerializer(request.user.watchlist, many=True)
         return Response(serializer.data)

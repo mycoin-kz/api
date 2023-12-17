@@ -5,22 +5,23 @@ from rest_framework.permissions import IsAuthenticated
 from main_module.models import Watchlist
 from .serializers import WatchlistSerializer
 from django.db.utils import IntegrityError
+import json
 
 
-@api_view(['GET'])
+@api_view(["GET"])
 def index(request):
-    return Response(data='index endpoint!')
+    return Response(data="index endpoint!")
 
 
-@api_view(['POST', 'GET', 'DELETE'])
+@api_view(["POST", "GET", "DELETE"])
 @permission_classes([IsAuthenticated])
 def get_watchlist(request):
-    if request.method == 'GET':
+    if request.method == "GET":
         serializer = WatchlistSerializer(request.user.watchlist, many=True)
         return Response(serializer.data)
-    if request.method == 'POST':
-        try: 
-            watchlist_obj = Watchlist(user=request.user, token=request.data['token'])
+    if request.method == "POST":
+        try:
+            watchlist_obj = Watchlist(user=request.user, token=request.data["token"])
             watchlist_obj.save()
         except IntegrityError:
             pass
@@ -28,7 +29,7 @@ def get_watchlist(request):
         return Response(serializer.data)
 
 
-@api_view(['DELETE'])
+@api_view(["DELETE"])
 @permission_classes([IsAuthenticated])
 def delete_watchlist(request, token_id):
     try:
@@ -40,3 +41,30 @@ def delete_watchlist(request, token_id):
     return Response(serializer.data)
 
 
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def summarydata(request, token_id):
+    with open("main_module/mocks/summary.json") as f:
+        return Response(json.load(f))
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def signalsdata(request, token_id):
+    with open("main_module/mocks/signals.json") as f:
+        return Response(json.load(f))
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def fulldata(request, token_id):
+    with open("main_module/mocks/fulldata.json") as f:
+        return Response(json.load(f))
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def overall_tokens(request):
+    with open("main_module/mocks/summary.json") as f:
+        summary = json.load(f)
+        return Response([summary for i in range(0, 25)])

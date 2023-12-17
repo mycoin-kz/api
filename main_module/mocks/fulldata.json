@@ -1,0 +1,59 @@
+{
+  "codrepo": {
+    "closed_total_issues": 21327,
+    "contributors": 1003,
+    "created_at": 1292771803000,
+    "forks": 29844,
+    "last_push": 1631103202000,
+    "last_update": 1631100509000,
+    "points": 128093,
+    "stars": 56870,
+    "subscribers": 3845
+  },
+  "cryptocompare_id": 1182,
+  "facebook": {
+    "is_closed": false,
+    "likes": 39654,
+    "points": 39654,
+    "talking_about": 26
+  },
+  "reddit": {
+    "active_users": 11157,
+    "comments_per_day": 3368.42,
+    "comments_per_hour": 140.35,
+    "community_creation": 1284042626000,
+    "points": 4449500,
+    "posts_per_day": 87.36,
+    "posts_per_hour": 3.64,
+    "subscribers": 4409293
+  },
+  "signals": null,
+  "techindicators": {
+    "ema10": 21419.650556424,
+    "ema50": 23477.3946873044,
+    "ema_sentiment": "bearish",
+    "macd_line": -301.3443464701,
+    "macd_sentiment": "bullish",
+    "macd_signal": -864.379150169,
+    "mfi14": 76.7455530806,
+    "mfi14_sentiment": "bullish",
+    "mom10": 1817.74,
+    "mom10_sentiment": "bullish",
+    "rsi10": 69.1125657987,
+    "rsi10_sentiment": "neutral",
+    "rsi50": 43.2777984936,
+    "rsi50_sentiment": "neutral",
+    "sma10": 20957.507,
+    "sma50": 23114.7386,
+    "sma_sentiment": "bearish"
+  },
+  "twitter": {
+    "account_creation": 1313643968000,
+    "favourites": 1000,
+    "followers": 844049,
+    "following": 165,
+    "lists": 6631,
+    "points": 91055,
+    "statuses": 20316
+  }
+}

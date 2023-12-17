@@ -1,0 +1,14 @@
+{
+  "inoutvar": {
+    "sentiment": "bullish"
+  },
+  "concentrationvar": {
+    "sentiment": "bullish"
+  },
+  "addressesnetgrowth": {
+    "sentiment": "bullish"
+  },
+  "largetxsvar": {
+    "sentiment": "bullish"
+  }
+}

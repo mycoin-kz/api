@@ -2,9 +2,18 @@ import time
 import requests
 import pandas as pd
 import warnings
+from random import randint
+
+import os
+import django
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "api.settings")
+django.setup()
+from main_module.models import Token, TwitterData, FacebookData, RedditData, CodrepoData, TechIndicators
+
 # from ..internal_tools.sqlfunctions import execute_many
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     warnings.filterwarnings("ignore")
     start_time = time.time()
 
@@ -24,6 +33,11 @@ if __name__ == '__main__':
     )
 
     for token_key in list(coins_json["Data"].keys()):
+        if (
+            not coins_json["Data"][token_key]["IsTrading"]
+            or not coins_json["Data"][token_key]["Rating"]["Weiss"]["Rating"]
+        ):
+            continue
         norm_df = pd.json_normalize(coins_json["Data"][token_key])[
             ["Id", "Symbol", "CoinName", "FullName"]
         ]
@@ -103,10 +117,49 @@ if __name__ == '__main__':
     # Inserting all df
     # conn = connect(param_dic)
     tuples = [tuple(x) for x in allcoinslist_df.to_numpy()]
-    print(tuples, list(allcoinslist_df.columns))
-    # execute_many(None, allcoinslist_df, "public.tokenslist")
 
-    # conn.close()
+    print(len(tuples), len(coins_json["Data"]))
+    for t in tuples:
+        token, _ = Token.objects.get_or_create(cryptocompare_id=t[0])
+        # token.cryptocompare_id = t[0]
+        token.cryptocompare_symbol = t[1]
+        token.cryptocompare_coinname = t[2]
+        token.cryptocompare_fullname = t[3]
+        token.coingecko_id = t[4]
+        token.coingecko_symbol = t[5]
+        token.coingecko_name = t[6]
+        token.cryptocompare_imageurl = t[7]
+        token.cryptocompare_assetlaunchdate = t[8]
+        token.cryptocompare_assetwebsiteurl = t[9]
+        token.coin_status = t[10]
+
+        token.imageurl = token.cryptocompare_imageurl
+        token.fullname = token.cryptocompare_fullname
+        token.symbol = token.cryptocompare_symbol
+
+        token.codrepo_perc = randint(7200, 9999)/100.0
+        token.reddit_perc = randint(7200, 9999)/100.0
+        token.twitter_perc = randint(7200, 9999)/100.0
+        token.fb_perc = randint(7200, 9999)/100.0
+
+        token.total_perc = (token.fb_perc + token.reddit_perc + token.codrepo_perc + token.twitter_perc)/4
+
+        max_signals = 11
+        bearish = max_signals // randint(2, 11)
+        bullish = (max_signals - bearish) // randint(1, max_signals - bearish)
+        neutral = max_signals - bearish - bullish
+
+        token.bearish = bearish
+        token.bullish = bullish
+        token.neutral = neutral
+
+        token.save()
+
+        TechIndicators.objects.create(token=token)
+        TwitterData.objects.create(token=token)
+        FacebookData.objects.create(token=token)
+        CodrepoData.objects.create(token=token)
+        RedditData.objects.create(token=token)
 
     del allcoinslist_df
     # print("--- Insert DataFrame: %s seconds ---" % (time.time() - start_time))

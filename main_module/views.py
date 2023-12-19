@@ -2,8 +2,8 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 
-from main_module.models import Watchlist
-from .serializers import WatchlistSerializer
+from main_module.models import Watchlist, Token
+from .serializers import WatchlistSerializer, FullDataSerializer, SummaryDataSerializer
 from django.db.utils import IntegrityError
 import json
 
@@ -44,8 +44,10 @@ def delete_watchlist(request, token_id):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def summarydata(request, token_id):
-    with open("main_module/mocks/summary.json") as f:
-        return Response(json.load(f))
+    token = Token.objects.get(cryptocompare_id=token_id)
+    return Response(SummaryDataSerializer(token).data)
+    # with open("main_module/mocks/summary.json") as f:
+    #     return Response(json.load(f))
 
 
 @api_view(["GET"])
@@ -58,13 +60,18 @@ def signalsdata(request, token_id):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def fulldata(request, token_id):
-    with open("main_module/mocks/fulldata.json") as f:
-        return Response(json.load(f))
+    token = Token.objects.get(cryptocompare_id=token_id)
+    return Response(FullDataSerializer(token).data)
+    # with open("main_module/mocks/fulldata.json") as f:
+    #     return Response(json.load(f))
 
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def overall_tokens(request):
-    with open("main_module/mocks/summary.json") as f:
-        summary = json.load(f)
-        return Response([summary for i in range(0, 25)])
+    tokens = Token.objects.all()
+    serializer = SummaryDataSerializer(tokens, many=True)
+    return Response(serializer.data)
+    # with open("main_module/mocks/summary.json") as f:
+    #     summary = json.load(f)
+    #     return Response([summary for i in range(0, 25)])

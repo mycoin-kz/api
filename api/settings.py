@@ -162,7 +162,7 @@ CSRF_COOKIE_NAME = "XSRF-TOKEN"
 CSRF_COOKIE_HTTPONLY = False
 CSRF_TRUSTED_ORIGINS = config(
     "FRONTEND_URL", "https://localhost:8000 https://localhost:8080"
-).split(" ")
+).split(" ") + config("HOSTS", "127.0.0.1 localhost").split(" ")
 SESSION_COOKIE_SECURE = True
 
 CORS_ALLOW_CREDENTIALS = True

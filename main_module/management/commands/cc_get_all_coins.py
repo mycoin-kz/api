@@ -1,19 +1,17 @@
+from django.core.management.base import BaseCommand, CommandError
+
 import time
 import requests
 import pandas as pd
 import warnings
 from random import randint
 
-import os
-import django
-
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "api.settings")
-django.setup()
 from main_module.models import Token, TwitterData, FacebookData, RedditData, CodrepoData, TechIndicators
 
 # from ..internal_tools.sqlfunctions import execute_many
 
-if __name__ == "__main__":
+
+def main():
     warnings.filterwarnings("ignore")
     start_time = time.time()
 
@@ -163,3 +161,8 @@ if __name__ == "__main__":
 
     del allcoinslist_df
     # print("--- Insert DataFrame: %s seconds ---" % (time.time() - start_time))
+
+
+class Command(BaseCommand):
+    def handle(self, *args, **options):
+        main()

@@ -19,7 +19,6 @@ import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
@@ -30,7 +29,6 @@ SECRET_KEY = config("DJANGO_SECRET_KEY", get_random_secret_key())
 DEBUG = config("DEBUG", cast=bool, default=False)
 
 ALLOWED_HOSTS = config("HOSTS", "127.0.0.1 localhost").split(" ")
-
 
 # Application definition
 
@@ -90,7 +88,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "api.wsgi.application"
 
-
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
@@ -99,7 +96,6 @@ DATABASES = {
         "DATABASE_URL", default="sqlite:///" + str(BASE_DIR / "db.sqlite3"), cast=db_url
     )
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
@@ -137,7 +133,6 @@ USE_I18N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
@@ -161,16 +156,15 @@ CSRF_COOKIE_SAMESITE = "None"
 CSRF_COOKIE_SECURE = True
 CSRF_COOKIE_NAME = "XSRF-TOKEN"
 CSRF_COOKIE_HTTPONLY = False
-CSRF_TRUSTED_ORIGINS = config(
-    "FRONTEND_URL", "https://localhost:8000 https://localhost:8080"
-).split(" ") + list(map(lambda h: 'http://' + h , config("HOSTS", "127.0.0.1 localhost").split(" "))) + \
-                       list(map(lambda h: 'https://' + h , config("HOSTS", "127.0.0.1 localhost").split(" ")))
+
+# 178.128.202.187
+CSRF_TRUSTED_ORIGINS = config("CSRF_TRUSTED_ORIGINS",
+                              "http://127.0.0.1 http://localhost https://127.0.0.1 https://localhost").split(' ')
 SESSION_COOKIE_SECURE = True
 
 CORS_ALLOW_CREDENTIALS = True
 SESSION_COOKIE_SAMESITE = "None"
 SESSION_COOKIE_HTTPONLY = False
-
 
 # SESSION_LOGIN = True
 REST_USE_JWT = True

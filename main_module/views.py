@@ -5,6 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from main_module.models import Watchlist, Token
 from .serializers import WatchlistSerializer, FullDataSerializer, SummaryDataSerializer
 from django.db.utils import IntegrityError
+from django.views.decorators.csrf import csrf_exempt
 import json
 
 
@@ -15,6 +16,7 @@ def index(request):
 
 @api_view(["POST", "GET", "DELETE"])
 @permission_classes([IsAuthenticated])
+@csrf_exempt
 def get_watchlist(request):
     if request.method == "GET":
         serializer = WatchlistSerializer(request.user.watchlist, many=True)
@@ -31,6 +33,7 @@ def get_watchlist(request):
 
 @api_view(["DELETE"])
 @permission_classes([IsAuthenticated])
+@csrf_exempt
 def delete_watchlist(request, token_id):
     try:
         watchlist = Watchlist.objects.get(user=request.user, token=token_id)

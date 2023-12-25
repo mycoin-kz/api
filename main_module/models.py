@@ -55,9 +55,9 @@ class Token(models.Model):
         null=True,
         blank=True,
     )
-    bullish = models.IntegerField(null=True, blank=True)
-    neutral = models.IntegerField(null=True, blank=True)
-    bearish = models.IntegerField(null=True, blank=True)
+    bullish = models.BigIntegerField(null=True, blank=True)
+    neutral = models.BigIntegerField(null=True, blank=True)
+    bearish = models.BigIntegerField(null=True, blank=True)
 
     def __str__(self):
         return self.cryptocompare_fullname
@@ -77,46 +77,46 @@ class TokenOHLCV(models.Model):
 
 class TwitterData(models.Model):
     token = models.OneToOneField(to=Token, on_delete=models.CASCADE, related_name='twitter_data')
-    account_creation = models.IntegerField(null=True, default=1313643968000)
-    favourites = models.IntegerField(null=True, default=1000)
-    followers = models.IntegerField(null=True, default=844049)
-    following = models.IntegerField(null=True, default=165)
-    lists = models.IntegerField(null=True, default=6631)
-    points = models.IntegerField(null=True, default=91055)
-    statuses = models.IntegerField(null=True, default=2031)
+    account_creation = models.BigIntegerField(null=True, default=1313643968000)
+    favourites = models.BigIntegerField(null=True, default=1000)
+    followers = models.BigIntegerField(null=True, default=844049)
+    following = models.BigIntegerField(null=True, default=165)
+    lists = models.BigIntegerField(null=True, default=6631)
+    points = models.BigIntegerField(null=True, default=91055)
+    statuses = models.BigIntegerField(null=True, default=2031)
 
 
 class RedditData(models.Model):
     token = models.OneToOneField(to=Token, on_delete=models.CASCADE, related_name='reddit_data')
-    active_users = models.IntegerField(null=True, default=11157)
+    active_users = models.BigIntegerField(null=True, default=11157)
     comments_per_day = models.FloatField(null=True, default=3368.42)
     comments_per_hour = models.FloatField(null=True, default=140.35)
-    community_creation = models.IntegerField(null=True, default=1284042626000)
-    points = models.IntegerField(null=True, default=4449500)
+    community_creation = models.BigIntegerField(null=True, default=1284042626000)
+    points = models.BigIntegerField(null=True, default=4449500)
     posts_per_day = models.FloatField(null=True, default=87.36)
     posts_per_hour = models.FloatField(null=True, default=3.64)
-    subscribers = models.IntegerField(null=True, default=4409293)
+    subscribers = models.BigIntegerField(null=True, default=4409293)
 
 
 class FacebookData(models.Model):
     token = models.OneToOneField(to=Token, on_delete=models.CASCADE, related_name='facebook_data')
     is_closed = models.BooleanField(default=False)
-    likes = models.IntegerField(null=True, default=39654)
-    points = models.IntegerField(null=True, default=39654)
-    talking_about = models.IntegerField(null=True, default=26)
+    likes = models.BigIntegerField(null=True, default=39654)
+    points = models.BigIntegerField(null=True, default=39654)
+    talking_about = models.BigIntegerField(null=True, default=26)
 
 
 class CodrepoData(models.Model):
     token = models.OneToOneField(to=Token, on_delete=models.CASCADE, related_name='codrepo_data')
-    closed_total_issues = models.IntegerField(null=True, default=21327)
-    contributors = models.IntegerField(null=True, default=1003)
-    created_at = models.IntegerField(null=True, default=1292771803000)
-    forks = models.IntegerField(null=True, default=29844)
-    last_push = models.IntegerField(null=True, default=1631103202000)
-    last_update = models.IntegerField(null=True, default=1631100509000)
-    points = models.IntegerField(null=True, default=128093)
-    stars = models.IntegerField(null=True, default=56870)
-    subscribers = models.IntegerField(null=True, default=3845)
+    closed_total_issues = models.BigIntegerField(null=True, default=21327)
+    contributors = models.BigIntegerField(null=True, default=1003)
+    created_at = models.BigIntegerField(null=True, default=1292771803000)
+    forks = models.BigIntegerField(null=True, default=29844)
+    last_push = models.BigIntegerField(null=True, default=1631103202000)
+    last_update = models.BigIntegerField(null=True, default=1631100509000)
+    points = models.BigIntegerField(null=True, default=128093)
+    stars = models.BigIntegerField(null=True, default=56870)
+    subscribers = models.BigIntegerField(null=True, default=3845)
 
 
 class TechIndicators(models.Model):

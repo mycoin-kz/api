@@ -8,6 +8,7 @@ from random import randint
 
 from main_module.models import Token, TwitterData, FacebookData, RedditData, CodrepoData, TechIndicators
 
+
 # from ..internal_tools.sqlfunctions import execute_many
 
 
@@ -32,8 +33,8 @@ def main():
 
     for token_key in list(coins_json["Data"].keys()):
         if (
-            not coins_json["Data"][token_key]["IsTrading"]
-            or not coins_json["Data"][token_key]["Rating"]["Weiss"]["Rating"]
+                not coins_json["Data"][token_key]["IsTrading"]
+                or not coins_json["Data"][token_key]["Rating"]["Weiss"]["Rating"]
         ):
             continue
         norm_df = pd.json_normalize(coins_json["Data"][token_key])[
@@ -119,6 +120,7 @@ def main():
     print(len(tuples), len(coins_json["Data"]))
     for t in tuples:
         token, _ = Token.objects.get_or_create(cryptocompare_id=t[0])
+        print(f'Processing {token.fullname}...')
         # token.cryptocompare_id = t[0]
         token.cryptocompare_symbol = t[1]
         token.cryptocompare_coinname = t[2]
@@ -135,12 +137,12 @@ def main():
         token.fullname = token.cryptocompare_fullname
         token.symbol = token.cryptocompare_symbol
 
-        token.codrepo_perc = randint(7200, 9999)/100.0
-        token.reddit_perc = randint(7200, 9999)/100.0
-        token.twitter_perc = randint(7200, 9999)/100.0
-        token.fb_perc = randint(7200, 9999)/100.0
+        token.codrepo_perc = randint(7200, 9999) / 100.0
+        token.reddit_perc = randint(7200, 9999) / 100.0
+        token.twitter_perc = randint(7200, 9999) / 100.0
+        token.fb_perc = randint(7200, 9999) / 100.0
 
-        token.total_perc = (token.fb_perc + token.reddit_perc + token.codrepo_perc + token.twitter_perc)/4
+        token.total_perc = (token.fb_perc + token.reddit_perc + token.codrepo_perc + token.twitter_perc) / 4
 
         max_signals = 11
         bearish = max_signals // randint(2, 11)
@@ -151,7 +153,11 @@ def main():
         token.bullish = bullish
         token.neutral = neutral
 
+        print(
+            f'Saving token with next params: \nTwitter score: {token.twitter_perc}, \nFacebook score: {token.fb_perc}, '
+            f'\nReddit score: {token.reddit_perc}, \nCodrepo score: {token.codrepo_perc}...')
         token.save()
+        print(f'Saved! {token}')
 
         TechIndicators.objects.get_or_create(token=token)
         TwitterData.objects.get_or_create(token=token)
@@ -165,4 +171,7 @@ def main():
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        main()
+        try:
+            main()
+        except CommandError:
+            print('Some error occurred during execution of cc_get_all_coins.py')

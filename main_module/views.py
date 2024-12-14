@@ -16,7 +16,7 @@ def index(request):
 
 @api_view(["POST", "GET", "DELETE"])
 @permission_classes([IsAuthenticated])
-@csrf_exempt
+# @csrf_exempt
 def get_watchlist(request):
     if request.method == "GET":
         serializer = WatchlistSerializer(request.user.watchlist, many=True)

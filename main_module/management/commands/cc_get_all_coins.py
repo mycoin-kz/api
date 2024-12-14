@@ -4,14 +4,13 @@ import time
 import requests
 import pandas as pd
 import warnings
-from random import randint
 
 from main_module.models import Token, TwitterData, FacebookData, RedditData, CodrepoData, TechIndicators
 
 
 # from ..internal_tools.sqlfunctions import execute_many
 
-
+# this function is used to get all coins from cryptocompare and save them to the database
 def main():
     warnings.filterwarnings("ignore")
     start_time = time.time()
@@ -119,6 +118,7 @@ def main():
 
     print(len(tuples), len(coins_json["Data"]))
     for t in tuples:
+        from random import randint
         token, _ = Token.objects.get_or_create(cryptocompare_id=t[0])
         print(f'Processing {token.fullname}...')
         # token.cryptocompare_id = t[0]
@@ -137,6 +137,7 @@ def main():
         token.fullname = token.cryptocompare_fullname
         token.symbol = token.cryptocompare_symbol
 
+        # get random percents
         token.codrepo_perc = randint(7200, 9999) / 100.0
         token.reddit_perc = randint(7200, 9999) / 100.0
         token.twitter_perc = randint(7200, 9999) / 100.0

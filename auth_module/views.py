@@ -89,22 +89,57 @@ class GoogleLoginAdapter(APIView):
     permission_classes = [AllowAny]
 
     CLIENT_ID = config("GOOGLE_CLIENT_ID", "")
-    CLIENT_SECRET = config(
-        "GOOGLE_SECRET_KEY", ""
-    )  # Read from a file or environmental variable in a real app
-    SCOPE = config("GOOGLE_SCOPE", "")
-    REDIRECT_URI = config("GOOGLE_REDIRECT_URI", "")
-    FRONT_REDIRECT = config("GOOGLE_FRONTEND_REDIRECT", "")
+    CLIENT_SECRET = config("GOOGLE_SECRET_KEY", "")
+    REDIRECT_URI = config("GOOGLE_REDIRECT_URI", "")  # For web flow
+    FRONT_REDIRECT = config("GOOGLE_FRONTEND_REDIRECT", "")  # For web flow
 
     def post(self, request, *args, **kwargs):
-        if "code" not in request.data:
-            auth_uri = (
-                "https://accounts.google.com/o/oauth2/v2/auth?response_type=code"
-                "&client_id={}&redirect_uri={}&scope={}"
-            ).format(self.CLIENT_ID, self.REDIRECT_URI, self.SCOPE)
-            return Response({"data passed": request.data, "auth uri": auth_uri})
-        else:
-            auth_code = request.data["code"]
+        """
+        Universal endpoint that handles both web and mobile authentication:
+        - For mobile: Expects an ID token in the request body
+        - For web: Handles the OAuth2 code flow
+        """
+        # Mobile flow - direct token verification
+        id_token = request.data.get("id_token")
+        if id_token:
+            return self._handle_mobile_flow(id_token)
+
+        # Web flow - OAuth2 code exchange
+        auth_code = request.data.get("code")
+        if auth_code:
+            return self._handle_web_flow(auth_code)
+
+        return Response(
+            {"error": "Either id_token (mobile) or code (web) is required"}, status=400
+        )
+
+    def _handle_mobile_flow(self, id_token):
+        """Handle mobile authentication with direct token verification"""
+        try:
+            # Verify the token with Google
+            google_verify_url = (
+                f"https://oauth2.googleapis.com/tokeninfo?id_token={id_token}"
+            )
+            response = requests.get(google_verify_url)
+            if response.status_code != 200:
+                return Response({"error": "Invalid token"}, status=401)
+
+            token_info = response.json()
+
+            # Verify that the token was issued for your app
+            if token_info.get("aud") != self.CLIENT_ID:
+                return Response({"error": "Token not issued for this app"}, status=401)
+
+            return self._handle_successful_auth(token_info)
+
+        except Exception as e:
+            return Response({"error": str(e)}, status=400)
+
+    def _handle_web_flow(self, auth_code):
+        """Handle web authentication with OAuth2 code flow"""
+        try:
+            # Exchange code for token
+            token_url = "https://oauth2.googleapis.com/token"
             data = {
                 "code": auth_code,
                 "client_id": self.CLIENT_ID,
@@ -112,34 +147,57 @@ class GoogleLoginAdapter(APIView):
                 "redirect_uri": self.REDIRECT_URI,
                 "grant_type": "authorization_code",
             }
-            r = requests.post("https://oauth2.googleapis.com/token", data=data)
-            if "access_token" in r.json():
-                return HttpResponseRedirect(
-                    self.FRONT_REDIRECT + "?code=" + r.json()["access_token"]
-                )
-            else:
-                return Response({"error": r.json(), "data": data})
+
+            response = requests.post(token_url, data=data)
+            if response.status_code != 200:
+                return Response({"error": "Failed to exchange code"}, status=401)
+
+            tokens = response.json()
+
+            # Verify ID token
+            id_token = tokens.get("id_token")
+            if not id_token:
+                return Response({"error": "No ID token in response"}, status=401)
+
+            # Verify the token
+            verify_url = f"https://oauth2.googleapis.com/tokeninfo?id_token={id_token}"
+            verify_response = requests.get(verify_url)
+            if verify_response.status_code != 200:
+                return Response({"error": "Invalid ID token"}, status=401)
+
+            token_info = verify_response.json()
+            return self._handle_successful_auth(token_info)
+
+        except Exception as e:
+            return Response({"error": str(e)}, status=400)
+
+    def _handle_successful_auth(self, token_info):
+        """Common handler for successful authentication"""
+        try:
+            # Here you would typically:
+            # 1. Get or create a user based on the Google ID (token_info.sub)
+            # 2. Generate your app's authentication token
+            # 3. Return the token and any other necessary user info
+
+            return Response(
+                {"token_info": token_info, "message": "Successfully authenticated"}
+            )
+        except Exception as e:
+            return Response({"error": str(e)}, status=400)
 
     def get(self, request, *args, **kwargs):
-        code = request.GET.get("code", "")
-        if code == "":
+        """Optional: Handle initial web OAuth flow"""
+        if request.GET.get("web_flow") == "true":
             auth_uri = (
-                "https://accounts.google.com/o/oauth2/v2/auth?response_type=code"
-                "&client_id={}&redirect_uri={}&scope={}"
-            ).format(self.CLIENT_ID, self.REDIRECT_URI, self.SCOPE)
-            return Response(auth_uri)
-        else:
-            data = {
-                "code": code,
-                "client_id": self.CLIENT_ID,
-                "client_secret": self.CLIENT_SECRET,
-                "redirect_uri": self.REDIRECT_URI,
-                "grant_type": "authorization_code",
-            }
-            r = requests.post("https://oauth2.googleapis.com/token", data=data)
-            if "access_token" in r.json():
-                return HttpResponseRedirect(
-                    self.FRONT_REDIRECT + "?code=" + r.json()["access_token"]
-                )
-            else:
-                return Response({"error": r.json(), "data": data})
+                "https://accounts.google.com/o/oauth2/v2/auth?"
+                "response_type=code"
+                f"&client_id={self.CLIENT_ID}"
+                f"&redirect_uri={self.REDIRECT_URI}"
+                "&scope=email profile"
+            )
+            return Response({"auth_url": auth_uri})
+
+        return Response(
+            {"error": "GET method is only supported for web flow initialization"},
+            status=405,
+        )

@@ -23,14 +23,14 @@ A Django-based REST API platform that provides cryptocurrency investment signals
 ```
 backend/
 ├── api/                    # Django project settings
-├── auth_module/           # Authentication related code
-├── main_module/          # Core business logic
-│   ├── models/          # Database models
-│   ├── services/       # Business logic services
-│   ├── serializers/   # API serializers
-│   └── views/        # API endpoints
-├── oneshots/           # One-time scripts
-└── requirements.txt    # Python dependencies
+├── auth_module/            # Authentication related code
+├── main_module/            # Core business logic
+│   ├── models/             # Database models
+│   ├── services/           # Business logic services
+│   ├── serializers/        # API serializers
+│   └── views/              # API endpoints
+├── oneshots/               # One-time scripts
+└── requirements.txt        # Python dependencies
 ```
 
 ## Setup
@@ -97,6 +97,108 @@ pytest --cov=.
 ## API Documentation
 
 API documentation is available at `/api/docs/` when running the server.
+
+## Authentication
+
+### Google Authentication
+
+The platform supports both web and mobile (iOS/Android) authentication flows with Google.
+
+#### Environment Variables
+
+```bash
+GOOGLE_CLIENT_ID=your_client_id
+GOOGLE_SECRET_KEY=your_client_secret
+GOOGLE_REDIRECT_URI=your_web_redirect_uri  # For web flow
+GOOGLE_FRONTEND_REDIRECT=your_frontend_url  # For web flow
+```
+
+#### Web Authentication Flow
+
+1. Initialize the OAuth flow:
+
+```http
+GET /auth/google/?web_flow=true
+```
+
+2. After user consent, send the authorization code:
+
+```http
+POST /auth/google/
+Content-Type: application/json
+
+{
+    "code": "received_auth_code"
+}
+```
+
+#### Mobile Authentication Flow
+
+For iOS/Android apps, send the ID token directly:
+
+```http
+POST /auth/google/
+Content-Type: application/json
+
+{
+    "id_token": "google_id_token"
+}
+```
+
+#### Response Format
+
+Successful authentication response:
+
+```json
+{
+    "token_info": {
+        "sub": "user_id",
+        "email": "user@example.com",
+        ...
+    },
+    "message": "Successfully authenticated"
+}
+```
+
+Error response:
+
+```json
+{
+  "error": "Error message"
+}
+```
+
+### Mobile Integration
+
+#### iOS Implementation
+
+1. Add Google Sign-In SDK to your project:
+
+```swift
+import GoogleSignIn
+```
+
+2. Configure the SDK:
+
+```swift
+GIDSignIn.sharedInstance.configuration = GIDConfiguration(clientID: "YOUR_CLIENT_ID")
+```
+
+3. Implement sign-in:
+
+```swift
+func signIn() {
+    GIDSignIn.sharedInstance.signIn(withPresenting: self) { signInResult, error in
+        guard let result = signInResult else { return }
+        guard let idToken = result.user.idToken?.tokenString else { return }
+
+        // Send idToken to your backend
+        let url = "YOUR_BACKEND_URL/auth/google/"
+        let parameters = ["id_token": idToken]
+        // Make API request...
+    }
+}
+```
 
 ## Contributing
 

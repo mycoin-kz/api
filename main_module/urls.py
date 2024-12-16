@@ -1,12 +1,19 @@
+"""URL configuration for main module."""
+
 from django.urls import path
 from . import views
 
+app_name = "main_module"
+
 urlpatterns = [
-    # path('', views.index, name='index'),
-    path("watchlist", views.get_watchlist, name="watchlist"),
-    path("watchlist/<str:token_id>", views.delete_watchlist, name="delete_watchlist"),
-    path("overall_tokens", views.overall_tokens, name="overall_tokens"),
-    path("summarydata/<str:token_id>", views.summarydata, name="summarydata"),
-    path("signalsdata/<str:token_id>", views.signalsdata, name="signalsdata"),
-    path("fulldata/<str:token_id>", views.fulldata, name="fulldata"),
+    path("", views.index, name="index"),
+    path("watchlist/", views.watchlist, name="watchlist"),
+    path(
+        "watchlist/<str:token_id>/",
+        views.delete_from_watchlist,
+        name="delete_from_watchlist",
+    ),
+    path("tokens/", views.all_tokens, name="all_tokens"),
+    path("tokens/<str:token_id>/summary/", views.token_summary, name="token_summary"),
+    path("tokens/<str:token_id>/full/", views.token_full_data, name="token_full_data"),
 ]

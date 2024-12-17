@@ -82,7 +82,7 @@ class TestViews:
         response = jwt_authenticated_client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert len(response.data) == 1
-        assert response.data[0]["token"] == watchlist_item.token
+        assert response.data[0]["cryptocompare_id"] == watchlist_item.token
 
     def test_add_to_watchlist(self, jwt_authenticated_client, token):
         """Test adding token to watchlist."""

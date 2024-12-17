@@ -43,6 +43,8 @@ class TwitterLogin(SocialLoginView):
 
 class RegisterView(APIView):
     serializer_class = RegisterSerializer
+    authentication_classes = []
+    permission_classes = []
 
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)

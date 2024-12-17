@@ -18,6 +18,11 @@ from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 import requests
 from decouple import config
 
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework import status
+
 
 class GoogleLogin(
     SocialLoginView
@@ -201,3 +206,15 @@ class GoogleLoginAdapter(APIView):
             {"error": "GET method is only supported for web flow initialization"},
             status=405,
         )
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def logout(request):
+    try:
+        refresh_token = request.data["refresh"]
+        token = RefreshToken(refresh_token)
+        token.blacklist()
+        return Response(status=status.HTTP_205_RESET_CONTENT)
+    except Exception as e:
+        return Response(status=status.HTTP_400_BAD_REQUEST)

@@ -38,3 +38,9 @@ class TokenAdmin(admin.ModelAdmin):
         FacebookDataInline,
         TechIndicatorsInline,
     ]
+
+
+@admin.register(models.Watchlist)
+class WatchlistAdmin(admin.ModelAdmin):
+    list_display = ("token", "user")
+    search_fields = ("token", "user__email", "user__name")

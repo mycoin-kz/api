@@ -15,6 +15,7 @@ from decouple import config
 from dj_database_url import parse as db_url
 from django.core.management.utils import get_random_secret_key
 import os
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -54,6 +55,7 @@ INSTALLED_APPS = [
     "allauth.socialaccount.providers.google",
     "auth_module",
     "main_module",
+    "rest_framework_simplejwt.token_blacklist",
 ]
 SITE_ID = 2
 
@@ -121,6 +123,41 @@ AUTH_PASSWORD_VALIDATORS = [
 #     ],
 # }
 
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ),
+    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
+    "EXCEPTION_HANDLER": "auth_module.utils.custom_exception_handler",
+}
+
+# JWT Settings
+REST_USE_JWT = True
+JWT_AUTH_RETURN_EXPIRATION = True
+JWT_AUTH_COOKIE = "jwt-auth"
+JWT_AUTH_REFRESH_COOKIE = "jwt-refresh"
+JWT_AUTH_SAMESITE = "None"
+JWT_AUTH_SECURE = True
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "ROTATE_REFRESH_TOKENS": False,
+    "UPDATE_LAST_LOGIN": False,
+    "AUTH_HEADER_TYPES": ("Bearer",),
+    "AUTH_HEADER_NAME": "HTTP_AUTHORIZATION",
+    "USER_ID_FIELD": "id",
+    "USER_ID_CLAIM": "user_id",
+    "SIGNING_KEY": SECRET_KEY,
+    "VERIFYING_KEY": None,
+    "ALGORITHM": "HS256",
+    "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
+    "TOKEN_TYPE_CLAIM": "token_type",
+    "BLACKLIST_AFTER_ROTATION": True,
+    "BLACKLIST_TOKEN_CHECKS": ["access", "refresh"],
+    "AUDIENCE": None,
+    "ISSUER": None,
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
@@ -158,20 +195,16 @@ CSRF_COOKIE_NAME = "XSRF-TOKEN"
 CSRF_COOKIE_HTTPONLY = False
 
 # 178.128.202.187
-CSRF_TRUSTED_ORIGINS = config("CSRF_TRUSTED_ORIGINS",
-                              "http://127.0.0.1 http://localhost https://127.0.0.1 https://localhost").split(' ')
+CSRF_TRUSTED_ORIGINS = config(
+    "CSRF_TRUSTED_ORIGINS",
+    "http://127.0.0.1 http://localhost https://127.0.0.1 https://localhost",
+).split(" ")
 SESSION_COOKIE_SECURE = True
 
 CORS_ALLOW_CREDENTIALS = True
 SESSION_COOKIE_SAMESITE = "None"
 SESSION_COOKIE_HTTPONLY = False
 
-# SESSION_LOGIN = True
-REST_USE_JWT = True
-JWT_AUTH_COOKIE = "jwt"
-JWT_AUTH_REFRESH_COOKIE = "jwt-refresh"
-JWT_AUTH_SAMESITE = "None"
-JWT_AUTH_SECURE = "Secure"
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_USE_TLS = config("EMAIL_USE_TLS", True)
@@ -179,3 +212,36 @@ EMAIL_HOST = config("EMAIL_HOST", "localhost")
 EMAIL_PORT = config("EMAIL_PORT", 25)
 EMAIL_HOST_USER = config("EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD", "")
+
+SOCIALACCOUNT_EMAIL_VERIFICATION = "none"
+SOCIALACCOUNT_EMAIL_REQUIRED = False
+REST_AUTH_TOKEN_MODEL = None  # Disable Token model since we're using JWT
+
+CORS_ALLOW_HEADERS = [
+    "accept",
+    "accept-encoding",
+    "authorization",
+    "content-type",
+    "dnt",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
+]
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+        },
+    },
+    "loggers": {
+        "rest_framework_simplejwt": {
+            "handlers": ["console"],
+            "level": "DEBUG",
+            "propagate": False,
+        },
+    },
+}

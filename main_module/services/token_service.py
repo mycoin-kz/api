@@ -194,3 +194,8 @@ class TokenService:
         except Exception as e:
             logger.error(f"Error filtering tokens: {str(e)}")
             raise TokenServiceException("Failed to filter tokens") from e
+
+    @classmethod
+    def get_tokens_by_ids(cls, token_ids: list[str]):
+        """Fetch multiple tokens by their IDs in a single query."""
+        return Token.objects.filter(cryptocompare_id__in=token_ids)

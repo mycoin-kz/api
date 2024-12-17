@@ -10,7 +10,8 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
-from rest_framework.authentication import TokenAuthentication
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 
 from main_module.services.watchlist_service import WatchlistService
 from main_module.services.token_service import (
@@ -27,17 +28,24 @@ def error_response(
     message: str, status_code: int = status.HTTP_400_BAD_REQUEST
 ) -> Response:
     """Helper function to create error responses."""
+    if isinstance(message, (InvalidToken, TokenError)):
+        return Response(
+            {"error": "Invalid or expired token. Please login again."},
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
     return Response({"error": message}, status=status_code)
 
 
 @api_view(["GET"])
+@authentication_classes([])
+@permission_classes([])
 def index(request: Request) -> Response:
     """Health check endpoint."""
     return Response({"status": "healthy"})
 
 
 @api_view(["GET", "POST"])
-@authentication_classes([TokenAuthentication])
+@authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
 def watchlist(request: Request) -> Response:
     """
@@ -48,8 +56,13 @@ def watchlist(request: Request) -> Response:
     """
     try:
         if request.method == "GET":
-            data = WatchlistService.get_user_watchlist(request.user)
-            return Response(data)
+            watchlist_data = WatchlistService.get_user_watchlist(request.user)
+            # Extract token IDs
+            token_ids = [item["token"] for item in watchlist_data]
+            # Fetch all tokens in a single query
+            token_data = TokenService.get_tokens_by_ids(token_ids)
+            serialized_data = SummaryDataSerializer(token_data, many=True).data
+            return Response(serialized_data)
 
         if request.method == "POST":
             token = request.data.get("token")
@@ -58,6 +71,8 @@ def watchlist(request: Request) -> Response:
 
             data = WatchlistService.add_to_watchlist(request.user, token)
             return Response(data)
+    except (InvalidToken, TokenError) as e:
+        return error_response(e, status.HTTP_401_UNAUTHORIZED)
     except Exception as e:
         logger.error(f"Watchlist operation failed: {str(e)}")
         return error_response(
@@ -67,7 +82,7 @@ def watchlist(request: Request) -> Response:
 
 
 @api_view(["DELETE"])
-@authentication_classes([TokenAuthentication])
+@authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
 def delete_from_watchlist(request: Request, token_id: str) -> Response:
     """Remove a token from user's watchlist."""
@@ -83,8 +98,8 @@ def delete_from_watchlist(request: Request, token_id: str) -> Response:
 
 
 @api_view(["GET"])
-@authentication_classes([TokenAuthentication])
-@permission_classes([IsAuthenticated])
+@authentication_classes([])
+@permission_classes([])
 def token_summary(request: Request, token_id: str) -> Response:
     """Get summary data for a specific token."""
     try:
@@ -98,8 +113,8 @@ def token_summary(request: Request, token_id: str) -> Response:
 
 
 @api_view(["GET"])
-@authentication_classes([TokenAuthentication])
-@permission_classes([IsAuthenticated])
+@authentication_classes([])
+@permission_classes([])
 def token_full_data(request: Request, token_id: str) -> Response:
     """Get full data for a specific token."""
     try:
@@ -113,7 +128,7 @@ def token_full_data(request: Request, token_id: str) -> Response:
 
 
 @api_view(["GET"])
-@authentication_classes([TokenAuthentication])
+@authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
 def all_tokens(request: Request) -> Response:
     """Get all available tokens with summary data."""

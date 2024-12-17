@@ -5,6 +5,8 @@ from django.urls import reverse
 from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.test import APIClient
+from rest_framework_simplejwt.tokens import RefreshToken
+from datetime import timedelta
 
 from main_module.models import Token, Watchlist
 
@@ -50,9 +52,10 @@ def watchlist_item(user, token):
 
 
 @pytest.fixture
-def authenticated_client(api_client, user):
-    """Create an authenticated API client."""
-    api_client.force_authenticate(user=user)
+def jwt_authenticated_client(api_client, user):
+    """Create a JWT authenticated API client."""
+    refresh = RefreshToken.for_user(user)
+    api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {str(refresh.access_token)}")
     return api_client
 
 
@@ -73,87 +76,108 @@ class TestViews:
         response = api_client.get(url)
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
-    def test_get_watchlist(self, authenticated_client, watchlist_item):
+    def test_get_watchlist(self, jwt_authenticated_client, watchlist_item):
         """Test getting user's watchlist."""
         url = reverse("main_module:watchlist")
-        response = authenticated_client.get(url)
+        response = jwt_authenticated_client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert len(response.data) == 1
         assert response.data[0]["token"] == watchlist_item.token
 
-    def test_add_to_watchlist(self, authenticated_client, token):
+    def test_add_to_watchlist(self, jwt_authenticated_client, token):
         """Test adding token to watchlist."""
         url = reverse("main_module:watchlist")
-        response = authenticated_client.post(url, {"token": token.cryptocompare_id})
+        response = jwt_authenticated_client.post(url, {"token": token.cryptocompare_id})
         assert response.status_code == status.HTTP_200_OK
         assert len(response.data) == 1
         assert response.data[0]["token"] == token.cryptocompare_id
 
-    def test_add_to_watchlist_missing_token(self, authenticated_client):
+    def test_add_to_watchlist_missing_token(self, jwt_authenticated_client):
         """Test adding to watchlist without token."""
         url = reverse("main_module:watchlist")
-        response = authenticated_client.post(url, {})
+        response = jwt_authenticated_client.post(url, {})
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
-    def test_delete_from_watchlist(self, authenticated_client, watchlist_item):
+    def test_delete_from_watchlist(self, jwt_authenticated_client, watchlist_item):
         """Test deleting from watchlist."""
         url = reverse("main_module:delete_from_watchlist", args=[watchlist_item.token])
-        response = authenticated_client.delete(url)
+        response = jwt_authenticated_client.delete(url)
         assert response.status_code == status.HTTP_200_OK
         assert len(response.data) == 0
 
-    def test_token_summary(self, authenticated_client, token):
+    def test_token_summary(self, jwt_authenticated_client, token):
         """Test getting token summary."""
         url = reverse("main_module:token_summary", args=[token.cryptocompare_id])
-        response = authenticated_client.get(url)
+        response = jwt_authenticated_client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["cryptocompare_id"] == token.cryptocompare_id
 
-    def test_token_summary_not_found(self, authenticated_client):
+    def test_token_summary_not_found(self, jwt_authenticated_client):
         """Test getting non-existent token summary."""
         url = reverse("main_module:token_summary", args=["NONEXISTENT"])
-        response = authenticated_client.get(url)
+        response = jwt_authenticated_client.get(url)
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
-    def test_token_full_data(self, authenticated_client, token):
+    def test_token_full_data(self, jwt_authenticated_client, token):
         """Test getting full token data."""
         url = reverse("main_module:token_full_data", args=[token.cryptocompare_id])
-        response = authenticated_client.get(url)
+        response = jwt_authenticated_client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["cryptocompare_id"] == token.cryptocompare_id
 
-    def test_all_tokens(self, authenticated_client, token):
+    def test_all_tokens(self, jwt_authenticated_client, token):
         """Test getting all tokens."""
         url = reverse("main_module:all_tokens")
-        response = authenticated_client.get(url)
+        response = jwt_authenticated_client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert len(response.data) == 1
         assert response.data[0]["cryptocompare_id"] == token.cryptocompare_id
 
-    def test_filter_tokens(self, authenticated_client, token):
+    def test_filter_tokens(self, jwt_authenticated_client, token):
         """Test filtering tokens."""
         url = reverse("main_module:all_tokens")
 
         # Test filtering by percentage
-        response = authenticated_client.get(url, {"min_total_perc": 80.0})
+        response = jwt_authenticated_client.get(url, {"min_total_perc": 80.0})
         assert response.status_code == status.HTTP_200_OK
         assert len(response.data) == 1
 
-        response = authenticated_client.get(url, {"min_total_perc": 90.0})
+        response = jwt_authenticated_client.get(url, {"min_total_perc": 90.0})
         assert response.status_code == status.HTTP_200_OK
         assert len(response.data) == 0
 
         # Test filtering by sentiment
-        response = authenticated_client.get(url, {"sentiment": "bullish"})
+        response = jwt_authenticated_client.get(url, {"sentiment": "bullish"})
         assert response.status_code == status.HTTP_200_OK
         assert len(response.data) == 1
 
-        response = authenticated_client.get(url, {"sentiment": "bearish"})
+        response = jwt_authenticated_client.get(url, {"sentiment": "bearish"})
         assert response.status_code == status.HTTP_200_OK
         assert len(response.data) == 0
 
-    def test_filter_tokens_invalid_percentage(self, authenticated_client):
+    def test_filter_tokens_invalid_percentage(self, jwt_authenticated_client):
         """Test filtering tokens with invalid percentage."""
         url = reverse("main_module:all_tokens")
-        response = authenticated_client.get(url, {"min_total_perc": "invalid"})
+        response = jwt_authenticated_client.get(url, {"min_total_perc": "invalid"})
         assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    def test_jwt_token_expired(self, api_client, user):
+        """Test expired token handling."""
+        # Create an expired token by manipulating its payload directly
+        token = RefreshToken.for_user(user)
+        expired_access_token = token.access_token
+        expired_access_token.payload["exp"] = 1  # Set to a timestamp in the past
+
+        api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {str(expired_access_token)}")
+        url = reverse("main_module:watchlist")
+        response = api_client.get(url)
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        assert "token_not_valid" in str(response.content).lower()
+
+    def test_jwt_token_refresh(self, api_client, user):
+        """Test token refresh functionality."""
+        refresh = RefreshToken.for_user(user)
+        url = reverse("auth_module:token_refresh")
+        response = api_client.post(url, {"refresh": str(refresh)})
+        assert response.status_code == status.HTTP_200_OK
+        assert "access" in response.data

@@ -200,6 +200,14 @@ func signIn() {
 }
 ```
 
+### JWT Authentication
+
+The API uses JWT (JSON Web Token) authentication. Include the token in the Authorization header:
+
+```bash
+Authorization: Bearer
+```
+
 ## Contributing
 
 1. Fork the repository
